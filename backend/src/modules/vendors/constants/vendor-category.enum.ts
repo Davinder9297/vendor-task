@@ -1,0 +1,7 @@
+export enum VendorCategory {
+  SERVICE_PROVIDER = 'SERVICE_PROVIDER',
+  SOFTWARE = 'SOFTWARE',
+  RENT = 'RENT',
+  FINANCE = 'FINANCE',
+  OTHER = 'OTHER',
+}

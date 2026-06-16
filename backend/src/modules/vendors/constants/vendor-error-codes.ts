@@ -1,0 +1,4 @@
+export const VendorErrorCodes = {
+  VENDOR_NOT_FOUND: 'VENDOR_NOT_FOUND',
+  VENDOR_DUPLICATE_EMAIL: 'VENDOR_DUPLICATE_EMAIL',
+} as const;
