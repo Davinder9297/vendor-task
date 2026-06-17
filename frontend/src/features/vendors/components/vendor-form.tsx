@@ -1,4 +1,4 @@
-import { useForm } from 'react-hook-form';
+import { useForm, UseFormSetError, Resolver } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { vendorSchema, VendorFormValues } from '../validation/vendor.schema';
 import { Button } from '@/components/ui/button';
@@ -23,7 +23,7 @@ function getCategoryLabel(category: VendorCategory): string {
 
 interface VendorFormProps {
   initialData?: Vendor;
-  onSubmit: (data: VendorFormValues, setError: any) => void;
+  onSubmit: (data: VendorFormValues, setError: UseFormSetError<VendorFormValues>) => void;
   isSubmitting: boolean;
   companyId: string;
 }
@@ -36,7 +36,7 @@ export function VendorForm({ initialData, onSubmit, isSubmitting, companyId }: V
     setError,
     formState: { errors },
   } = useForm<VendorFormValues>({
-    resolver: zodResolver(vendorSchema) as any,
+    resolver: zodResolver(vendorSchema) as Resolver<VendorFormValues>,
     defaultValues: initialData
       ? {
           name: initialData.name,

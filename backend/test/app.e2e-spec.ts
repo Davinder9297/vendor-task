@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call */
 import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import request from 'supertest';
@@ -94,9 +95,13 @@ describe('VendorsController (e2e)', () => {
     expect(response.body.success).toBe(false);
     expect(response.body.error.code).toBe('VALIDATION_ERROR');
     expect(response.body.error.fields).toBeInstanceOf(Array);
-    
-    const nameField = response.body.error.fields.find((f: any) => f.path === 'name');
-    const categoryField = response.body.error.fields.find((f: any) => f.path === 'category');
+
+    const nameField = response.body.error.fields.find(
+      (f: any) => f.path === 'name',
+    );
+    const categoryField = response.body.error.fields.find(
+      (f: any) => f.path === 'category',
+    );
     expect(nameField).toBeDefined();
     expect(categoryField).toBeDefined();
   });
@@ -122,7 +127,7 @@ describe('VendorsController (e2e)', () => {
     expect(response.body.success).toBe(false);
     expect(response.body.error.code).toBe('VENDOR_DUPLICATE_EMAIL');
     expect(response.body.error.fields).toEqual([
-      { path: 'email', message: 'Already exists' }
+      { path: 'email', message: 'Already exists' },
     ]);
   });
 
@@ -136,8 +141,9 @@ describe('VendorsController (e2e)', () => {
 
     const vendorId = createRes.body.data.id;
 
-    const response = await request(app.getHttpServer())
-      .get(`/api/v1/companies/company-b/vendors/${vendorId}`);
+    const response = await request(app.getHttpServer()).get(
+      `/api/v1/companies/company-b/vendors/${vendorId}`,
+    );
 
     expect(response.status).toBe(404);
     expect(response.body.success).toBe(false);
@@ -154,11 +160,13 @@ describe('VendorsController (e2e)', () => {
 
     const vendorId = createRes.body.data.id;
 
-    await request(app.getHttpServer())
-      .delete(`/api/v1/companies/demo-company/vendors/${vendorId}`);
+    await request(app.getHttpServer()).delete(
+      `/api/v1/companies/demo-company/vendors/${vendorId}`,
+    );
 
-    const listRes = await request(app.getHttpServer())
-      .get('/api/v1/companies/demo-company/vendors');
+    const listRes = await request(app.getHttpServer()).get(
+      '/api/v1/companies/demo-company/vendors',
+    );
 
     expect(listRes.status).toBe(200);
     expect(listRes.body.data.vendors.length).toBe(0);
@@ -211,8 +219,9 @@ describe('VendorsController (e2e)', () => {
 
     const vendorId = createRes.body.data.id;
 
-    const response = await request(app.getHttpServer())
-      .delete(`/api/v1/companies/demo-company/vendors/${vendorId}`);
+    const response = await request(app.getHttpServer()).delete(
+      `/api/v1/companies/demo-company/vendors/${vendorId}`,
+    );
 
     expect(response.status).toBe(200);
     expect(response.body.success).toBe(true);

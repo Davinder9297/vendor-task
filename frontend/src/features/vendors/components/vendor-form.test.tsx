@@ -14,7 +14,7 @@ describe('VendorForm', () => {
   const mockPush = jest.fn();
 
   beforeEach(() => {
-    mockUseRouter.mockReturnValue({ push: mockPush } as any);
+    mockUseRouter.mockReturnValue({ push: mockPush } as unknown as ReturnType<typeof useRouter>);
   });
 
   afterEach(() => {

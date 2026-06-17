@@ -11,6 +11,8 @@ import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { useToast } from '@/components/ui/toast';
 import { ApiError } from '@/features/vendors/api/vendors.api';
+import { VendorFormValues } from '@/features/vendors/validation/vendor.schema';
+import { UseFormSetError } from 'react-hook-form';
 
 export default function EditVendorPage() {
   const params = useParams();
@@ -35,7 +37,7 @@ export default function EditVendorPage() {
         <Card className="max-w-md mx-auto">
           <CardContent className="pt-8 pb-8">
             <h2 className="text-xl font-semibold text-foreground mb-2">Vendor Not Found</h2>
-            <p className="text-muted-foreground mb-6">The vendor you're looking for doesn't exist or you don't have access to it.</p>
+            <p className="text-muted-foreground mb-6">The vendor you&apos;re looking for doesn&apos;t exist or you don&apos;t have access to it.</p>
             <Link href={`/dashboard/companies/${companyId}/vendors`}>
               <Button>
                 <ArrowLeft className="h-4 w-4 mr-2" />
@@ -48,7 +50,7 @@ export default function EditVendorPage() {
     );
   }
 
-  const handleSubmit = (data: any, setError: any) => {
+  const handleSubmit = (data: VendorFormValues, setError: UseFormSetError<VendorFormValues>) => {
     updateMutation.mutate(data, {
       onSuccess: () => {
         addToast({
@@ -62,7 +64,7 @@ export default function EditVendorPage() {
         const apiError = error as ApiError;
         if (apiError.fields && Array.isArray(apiError.fields)) {
           apiError.fields.forEach((fieldErr) => {
-            setError(fieldErr.path, {
+            setError(fieldErr.path as Parameters<typeof setError>[0], {
               type: 'manual',
               message: fieldErr.message,
             });

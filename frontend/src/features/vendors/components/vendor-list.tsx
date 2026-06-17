@@ -11,7 +11,6 @@ import { Trash2, Edit2, Search, Plus, ArrowUp, ArrowDown } from 'lucide-react';
 import { useDeleteVendor } from '../hooks/use-delete-vendor';
 import { useToast } from '@/components/ui/toast';
 import { ApiError } from '../api/vendors.api';
-import { cn } from '@/lib/utils';
 import { Loader } from '@/components/ui/loader';
 import { Pagination } from '@/components/ui/pagination';
 
@@ -24,6 +23,23 @@ function getCategoryLabel(category: VendorCategory): string {
     [VendorCategory.OTHER]: 'Other',
   };
   return labels[category] || category;
+}
+
+function SortIcon({
+  field,
+  sortBy,
+  sortOrder,
+}: {
+  field: SortField;
+  sortBy: SortField;
+  sortOrder: SortOrder;
+}) {
+  if (sortBy !== field) return null;
+  return sortOrder === 'asc' ? (
+    <ArrowUp className="h-4 w-4 inline ml-1" />
+  ) : (
+    <ArrowDown className="h-4 w-4 inline ml-1" />
+  );
 }
 
 interface VendorListProps {
@@ -100,14 +116,7 @@ export function VendorList({
     }
   };
 
-  const SortIcon = ({ field }: { field: SortField }) => {
-    if (sortBy !== field) return null;
-    return sortOrder === 'asc' ? (
-      <ArrowUp className="h-4 w-4 inline ml-1" />
-    ) : (
-      <ArrowDown className="h-4 w-4 inline ml-1" />
-    );
-  };
+
 
   return (
     <div className="space-y-6">
@@ -155,42 +164,42 @@ export function VendorList({
                     onClick={() => handleSort('name')}
                   >
                     Name
-                    <SortIcon field="name" />
+                    <SortIcon field="name" sortBy={sortBy} sortOrder={sortOrder} />
                   </th>
                   <th 
                     className="text-left py-4 px-6 font-medium text-muted-foreground cursor-pointer hover:bg-muted/80"
                     onClick={() => handleSort('email')}
                   >
                     Email
-                    <SortIcon field="email" />
+                    <SortIcon field="email" sortBy={sortBy} sortOrder={sortOrder} />
                   </th>
                   <th 
                     className="text-left py-4 px-6 font-medium text-muted-foreground cursor-pointer hover:bg-muted/80"
                     onClick={() => handleSort('phone')}
                   >
                     Phone
-                    <SortIcon field="phone" />
+                    <SortIcon field="phone" sortBy={sortBy} sortOrder={sortOrder} />
                   </th>
                   <th 
                     className="text-left py-4 px-6 font-medium text-muted-foreground cursor-pointer hover:bg-muted/80"
                     onClick={() => handleSort('category')}
                   >
                     Category
-                    <SortIcon field="category" />
+                    <SortIcon field="category" sortBy={sortBy} sortOrder={sortOrder} />
                   </th>
                   <th 
                     className="text-left py-4 px-6 font-medium text-muted-foreground cursor-pointer hover:bg-muted/80"
                     onClick={() => handleSort('status')}
                   >
                     Status
-                    <SortIcon field="status" />
+                    <SortIcon field="status" sortBy={sortBy} sortOrder={sortOrder} />
                   </th>
                   <th 
                     className="text-left py-4 px-6 font-medium text-muted-foreground cursor-pointer hover:bg-muted/80"
                     onClick={() => handleSort('createdAt')}
                   >
                     Created
-                    <SortIcon field="createdAt" />
+                    <SortIcon field="createdAt" sortBy={sortBy} sortOrder={sortOrder} />
                   </th>
                   <th className="text-right py-4 px-6 font-medium text-muted-foreground">Actions</th>
                 </tr>

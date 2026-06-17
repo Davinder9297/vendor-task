@@ -8,6 +8,7 @@ import { ListVendorsQueryDto } from './dtos/list-vendors-query.dto';
 import { VendorMapper, VendorResponse } from './mappers/vendor.mapper';
 import { BaseException } from '../../common/exceptions/base.exception';
 import { VendorErrorCodes } from './constants/vendor-error-codes';
+import { VendorStatus } from './constants/vendor-status.enum';
 
 @Injectable()
 export class VendorsService {
@@ -53,7 +54,9 @@ export class VendorsService {
       await vendor.save();
       return VendorMapper.toResponse(vendor);
     } catch (error: unknown) {
-      this.logger.error(`Error in create vendor: ${error instanceof Error ? error.message : error}`);
+      this.logger.error(
+        `Error in create vendor: ${error instanceof Error ? error.message : String(error)}`,
+      );
       if (
         error &&
         typeof error === 'object' &&
@@ -80,8 +83,23 @@ export class VendorsService {
     page: number;
     limit: number;
   }> {
-    const { search, status, page = 1, limit = 10, sortBy = 'createdAt', sortOrder = 'desc' } = query;
-    const filter: any = {
+    const {
+      search,
+      status,
+      page = 1,
+      limit = 10,
+      sortBy = 'createdAt',
+      sortOrder = 'desc',
+    } = query;
+    const filter: {
+      companyId: string;
+      deletedAt: null;
+      status?: VendorStatus;
+      $or?: Array<
+        | { name: { $regex: string; $options: string } }
+        | { email: { $regex: string; $options: string } }
+      >;
+    } = {
       companyId,
       deletedAt: null,
     };
@@ -98,18 +116,13 @@ export class VendorsService {
     }
 
     const skip = (page - 1) * limit;
-    
+
     // Define sort object
-    const sort: any = {};
+    const sort: Record<string, 1 | -1> = {};
     sort[sortBy] = sortOrder === 'desc' ? -1 : 1;
 
     const [vendors, total] = await Promise.all([
-      this.vendorModel
-        .find(filter)
-        .sort(sort)
-        .skip(skip)
-        .limit(limit)
-        .exec(),
+      this.vendorModel.find(filter).sort(sort).skip(skip).limit(limit).exec(),
       this.vendorModel.countDocuments(filter),
     ]);
 
@@ -187,7 +200,9 @@ export class VendorsService {
       await vendor.save();
       return VendorMapper.toResponse(vendor);
     } catch (error: unknown) {
-      this.logger.error(`Error in update vendor: ${error instanceof Error ? error.message : error}`);
+      this.logger.error(
+        `Error in update vendor: ${error instanceof Error ? error.message : String(error)}`,
+      );
       if (
         error &&
         typeof error === 'object' &&

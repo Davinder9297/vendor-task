@@ -1,4 +1,12 @@
-import { IsOptional, IsString, IsEnum, IsInt, Min, Max, IsIn } from 'class-validator';
+import {
+  IsOptional,
+  IsString,
+  IsEnum,
+  IsInt,
+  Min,
+  Max,
+  IsIn,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 import { VendorStatus } from '../constants/vendor-status.enum';
 

@@ -9,6 +9,8 @@ import { ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { useToast } from '@/components/ui/toast';
 import { ApiError } from '@/features/vendors/api/vendors.api';
+import { VendorFormValues } from '@/features/vendors/validation/vendor.schema';
+import { UseFormSetError } from 'react-hook-form';
 
 export default function CreateVendorPage() {
   const params = useParams();
@@ -17,7 +19,7 @@ export default function CreateVendorPage() {
   const createMutation = useCreateVendor(companyId);
   const { addToast } = useToast();
 
-  const handleSubmit = (data: any, setError: any) => {
+  const handleSubmit = (data: VendorFormValues, setError: UseFormSetError<VendorFormValues>) => {
     createMutation.mutate(data, {
       onSuccess: () => {
         addToast({
@@ -31,7 +33,7 @@ export default function CreateVendorPage() {
         const apiError = error as ApiError;
         if (apiError.fields && Array.isArray(apiError.fields)) {
           apiError.fields.forEach((fieldErr) => {
-            setError(fieldErr.path, {
+            setError(fieldErr.path as Parameters<typeof setError>[0], {
               type: 'manual',
               message: fieldErr.message,
             });

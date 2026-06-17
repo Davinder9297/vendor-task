@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { useParams } from 'next/navigation';
 import { VendorList } from '@/features/vendors/components/vendor-list';
 import { useVendors } from '@/features/vendors/hooks/use-vendors';
@@ -13,7 +13,6 @@ import { debounce } from '@/lib/utils';
 export default function VendorsPage() {
   const params = useParams();
   const companyId = params.companyId as string;
-  const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [status, setStatus] = useState('');
   const [page, setPage] = useState(1);
@@ -21,16 +20,16 @@ export default function VendorsPage() {
   const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
 
   // Debounce search changes
-  const debouncedSetSearch = useCallback(
-    debounce((value: string) => {
-      setDebouncedSearch(value);
-      setPage(1); // Reset to first page when search changes
-    }, 300),
+  const debouncedSetSearch = useMemo(
+    () =>
+      debounce((value: string) => {
+        setDebouncedSearch(value);
+        setPage(1); // Reset to first page when search changes
+      }, 300),
     []
   );
 
   const handleSearchChange = useCallback((value: string) => {
-    setSearch(value);
     debouncedSetSearch(value);
   }, [debouncedSetSearch]);
 

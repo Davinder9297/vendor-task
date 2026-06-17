@@ -68,7 +68,9 @@ async function seed() {
   await vendorModel.insertMany(demoVendors);
 
   console.log('✅ Seed data created successfully!');
-  console.log(`📊 ${demoVendors.length} vendors added for company: ${companyId}`);
+  console.log(
+    `📊 ${demoVendors.length} vendors added for company: ${companyId}`,
+  );
 
   await app.close();
 }

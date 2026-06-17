@@ -30,7 +30,7 @@ async function fetchApi<T>(url: string, options?: RequestInit): Promise<T> {
       const error = new ApiError(
         data.error?.code || 'UNKNOWN_ERROR',
         data.error?.message || 'An error occurred',
-        data.error?.fields as any,
+        data.error?.fields,
       );
       throw error;
     }

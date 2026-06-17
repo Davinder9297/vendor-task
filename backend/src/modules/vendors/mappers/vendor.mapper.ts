@@ -1,5 +1,4 @@
 import { VendorDocument } from '../schemas/vendor.schema';
-import { Types } from 'mongoose';
 
 export interface VendorResponse {
   id: string;

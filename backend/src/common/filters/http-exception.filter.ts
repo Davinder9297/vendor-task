@@ -52,11 +52,12 @@ export class HttpExceptionFilter implements ExceptionFilter {
 
       let message = exception.message || 'Internal server error';
       if (exceptionResponse && typeof exceptionResponse === 'object') {
-        const resObj = exceptionResponse as any;
-        if (typeof resObj.message === 'string') {
-          message = resObj.message;
-        } else if (Array.isArray(resObj.message)) {
-          message = resObj.message.join(', ');
+        const resObj = exceptionResponse as Record<string, unknown>;
+        const msg = resObj.message;
+        if (typeof msg === 'string') {
+          message = msg;
+        } else if (Array.isArray(msg)) {
+          message = msg.join(', ');
         }
       }
 
