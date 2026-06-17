@@ -42,6 +42,6 @@ export interface ApiResponse<T = any> {
   error?: {
     code: string;
     message: string;
-    fields?: Record<string, string>;
+    fields?: { path: string; message: string }[];
   };
 }

@@ -1,0 +1,306 @@
+{
+	"info": {
+		"_postman_id": "a90df123-1d4e-4b2a-89aa-56a7d8e9f0c2",
+		"name": "Vendor CRM API",
+		"description": "Postman collection for the Mini CRM Vendor Directory API. This collection contains requests to manage vendors under specific companies, including endpoints to create, list, retrieve, update, and soft-delete vendors.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Vendors",
+			"item": [
+				{
+					"name": "Create Vendor",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 201\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});",
+									"",
+									"pm.test(\"Response is successful and contains vendor details\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.be.true;",
+									"    pm.expect(jsonData.data).to.have.property('id');",
+									"    pm.expect(jsonData.data.name).to.eql(\"Acme Software Solutions\");",
+									"});",
+									"",
+									"// Extract and save the vendor ID for subsequent requests",
+									"const response = pm.response.json();",
+									"if (response && response.success && response.data && response.data.id) {",
+									"    pm.collectionVariables.set(\"vendorId\", response.data.id);",
+									"    console.log(\"Saved vendorId to collection variables:\", response.data.id);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Acme Software Solutions\",\n  \"email\": \"contact@acmesoftware.com\",\n  \"phone\": \"+1-555-0199\",\n  \"category\": \"SOFTWARE\",\n  \"status\": \"ACTIVE\",\n  \"notes\": \"Primary software and license provider\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/companies/{{companyId}}/vendors",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"companies",
+								"{{companyId}}",
+								"vendors"
+							]
+						},
+						"description": "Creates a new vendor under the specified companyId.\n\n### Validation Rules:\n- `name`: 2-80 characters, required\n- `email`: valid email address format (optional, must be unique for active vendors under the same company)\n- `phone`: optional string\n- `category`: one of the allowed enums (`SERVICE_PROVIDER`, `SOFTWARE`, `RENT`, `FINANCE`, `OTHER`), required\n- `status`: one of the allowed enums (`ACTIVE`, `INACTIVE`), defaults to `ACTIVE` if omitted\n- `notes`: optional string, maximum 500 characters"
+					},
+					"response": []
+				},
+				{
+					"name": "List Vendors",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response contains vendors list and total count\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.be.true;",
+									"    pm.expect(jsonData.data).to.have.property('vendors');",
+									"    pm.expect(jsonData.data.vendors).to.be.an('array');",
+									"    pm.expect(jsonData.data).to.have.property('total');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/companies/{{companyId}}/vendors?search=Acme&status=ACTIVE&page=1&limit=10&sortBy=createdAt&sortOrder=desc",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"companies",
+								"{{companyId}}",
+								"vendors"
+							],
+							"query": [
+								{
+									"key": "search",
+									"value": "Acme",
+									"description": "Filters vendors by searching name or email (case-insensitive substring match)",
+									"disabled": true
+								},
+								{
+									"key": "status",
+									"value": "ACTIVE",
+									"description": "Filters vendors by status (ACTIVE or INACTIVE)",
+									"disabled": true
+								},
+								{
+									"key": "page",
+									"value": "1",
+									"description": "Page number (defaults to 1)",
+									"disabled": true
+								},
+								{
+									"key": "limit",
+									"value": "10",
+									"description": "Number of vendors per page (1 to 100, defaults to 10)",
+									"disabled": true
+								},
+								{
+									"key": "sortBy",
+									"value": "createdAt",
+									"description": "Field to sort by ('name', 'email', 'status', 'category', 'createdAt', 'updatedAt')",
+									"disabled": true
+								},
+								{
+									"key": "sortOrder",
+									"value": "desc",
+									"description": "Sort direction ('asc' or 'desc')",
+									"disabled": true
+								}
+							]
+						},
+						"description": "Lists all non-deleted vendors for the specified company. Supports optional search filtering, status filtering, sorting, and pagination.\n\n### Query Parameters:\n- `search`: Filter by vendor name or email (case-insensitive)\n- `status`: Filter by status (`ACTIVE`, `INACTIVE`)\n- `page`: Pagination page (integer >= 1, defaults to 1)\n- `limit`: Pagination limit (integer 1-100, defaults to 10)\n- `sortBy`: Field to sort by (`name`, `email`, `status`, `category`, `createdAt`, `updatedAt`, defaults to `createdAt`)\n- `sortOrder`: Sort direction (`asc`, `desc`, defaults to `desc`)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Vendor",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Returns the requested vendor details\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.be.true;",
+									"    pm.expect(jsonData.data.id).to.eql(pm.collectionVariables.get(\"vendorId\"));",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/companies/{{companyId}}/vendors/{{vendorId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"companies",
+								"{{companyId}}",
+								"vendors",
+								"{{vendorId}}"
+							]
+						},
+						"description": "Retrieves the details of a single vendor using its vendor ID. Vendors are company-specific, so if a vendor belongs to a different company, a 404 NOT FOUND status is returned."
+					},
+					"response": []
+				},
+				{
+					"name": "Update Vendor",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Vendor updated successfully\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.be.true;",
+									"    pm.expect(jsonData.data.notes).to.eql(\"Updated notes with license information\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Acme Software Solutions Ltd\",\n  \"status\": \"ACTIVE\",\n  \"notes\": \"Updated notes with license information\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/companies/{{companyId}}/vendors/{{vendorId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"companies",
+								"{{companyId}}",
+								"vendors",
+								"{{vendorId}}"
+							]
+						},
+						"description": "Partially updates an existing vendor. Validates all updated fields using the same validation schema as creation."
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Vendor (Soft Delete)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response reports success\", function () {",
+									"    const jsonData = pm.response.json();",
+									"    pm.expect(jsonData.success).to.be.true;",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/v1/companies/{{companyId}}/vendors/{{vendorId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"companies",
+								"{{companyId}}",
+								"vendors",
+								"{{vendorId}}"
+							]
+						},
+						"description": "Soft deletes a vendor. This updates the vendor's `deletedAt` field to the current timestamp and makes the vendor inaccessible through general searches and listings."
+					},
+					"response": []
+				}
+			],
+			"description": "Endpoints to manage company vendors."
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:3001",
+			"type": "string"
+		},
+		{
+			"key": "companyId",
+			"value": "demo-company",
+			"type": "string"
+		},
+		{
+			"key": "vendorId",
+			"value": "65d1d6a8f1b2c3d4e5f6a7b8",
+			"type": "string"
+		}
+	]
+}

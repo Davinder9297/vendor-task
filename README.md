@@ -86,6 +86,22 @@ The frontend will be available at http://localhost:3000
 - `PATCH /api/v1/companies/:companyId/vendors/:vendorId` - Update a vendor
 - `DELETE /api/v1/companies/:companyId/vendors/:vendorId` - Soft delete a vendor
 
+## Postman Collection
+
+A Postman collection is included in the root of the project: [Vendor_CRM.postman_collection.json](file:///c:/vendor-task/Vendor_CRM.postman_collection.json).
+
+### How to Use:
+1. Open Postman and click on **Import**.
+2. Select the `Vendor_CRM.postman_collection.json` file.
+3. The collection is pre-configured with the following collection variables:
+   - `baseUrl`: `http://localhost:3001` (Backend API base URL)
+   - `companyId`: `demo-company` (Default company ID)
+   - `vendorId`: Temporary vendor ID placeholder
+4. **Automated Testing & Variable Extraction**: 
+   - When you execute the **Create Vendor** request, a post-request test script automatically extracts the created vendor's `id` from the JSON response and updates the collection's `vendorId` variable.
+   - Subsequent requests (Get, Update, and Delete Vendor) will immediately work using the newly created vendor's ID without manual copying.
+5. All requests contain pre-configured test assertions verifying successful response structures and statuses (e.g., `200` or `201`).
+
 ## Vendor Fields
 
 | Field | Type | Required | Description |

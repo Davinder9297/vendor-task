@@ -1,4 +1,4 @@
-import { ApiResponse } from '../interfaces/api-response.interface';
+import { ApiResponse, ApiValidationErrorField } from '../interfaces/api-response.interface';
 
 export class ResponseHelper {
   static success<T>(data: T): ApiResponse<T> {
@@ -11,7 +11,7 @@ export class ResponseHelper {
   static error(
     code: string,
     message: string,
-    fields?: Record<string, string>,
+    fields?: ApiValidationErrorField[],
   ): ApiResponse {
     return {
       success: false,

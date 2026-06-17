@@ -1,6 +1,6 @@
-import { Injectable } from '@nestjs/common';
-import { InjectModel, InjectConnection } from '@nestjs/mongoose';
-import { Model, Connection } from 'mongoose';
+import { Injectable, Logger } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
 import { Vendor, VendorDocument } from './schemas/vendor.schema';
 import { CreateVendorDto } from './dtos/create-vendor.dto';
 import { UpdateVendorDto } from './dtos/update-vendor.dto';
@@ -11,17 +11,38 @@ import { VendorErrorCodes } from './constants/vendor-error-codes';
 
 @Injectable()
 export class VendorsService {
+  private readonly logger = new Logger(VendorsService.name);
+
   constructor(
     @InjectModel(Vendor.name) private vendorModel: Model<VendorDocument>,
-    @InjectConnection() private connection: Connection,
   ) {}
 
   async create(
     companyId: string,
     createVendorDto: CreateVendorDto,
   ): Promise<VendorResponse> {
-    const session = await this.connection.startSession();
-    session.startTransaction();
+    // Trim and lowercase email if provided
+    if (createVendorDto.email) {
+      createVendorDto.email = createVendorDto.email.trim().toLowerCase();
+    }
+
+    // Explicit check for duplicate email within the same company (case-insensitive)
+    if (createVendorDto.email) {
+      const existing = await this.vendorModel.findOne({
+        companyId,
+        email: createVendorDto.email,
+        deletedAt: null,
+      });
+
+      if (existing) {
+        throw new BaseException(
+          VendorErrorCodes.VENDOR_DUPLICATE_EMAIL,
+          'Vendor with this email already exists for this company',
+          409,
+          [{ path: 'email', message: 'Already exists' }],
+        );
+      }
+    }
 
     try {
       const vendor = new this.vendorModel({
@@ -29,29 +50,24 @@ export class VendorsService {
         ...createVendorDto,
       });
 
-      await vendor.save({ session });
-      await session.commitTransaction();
+      await vendor.save();
       return VendorMapper.toResponse(vendor);
     } catch (error: unknown) {
-      await session.abortTransaction();
-      console.error('Error in create vendor:', error);
+      this.logger.error(`Error in create vendor: ${error instanceof Error ? error.message : error}`);
       if (
         error &&
         typeof error === 'object' &&
         'code' in error &&
         (error as { code: number }).code === 11000
       ) {
-        console.log('Throwing duplicate email error');
         throw new BaseException(
           VendorErrorCodes.VENDOR_DUPLICATE_EMAIL,
           'Vendor with this email already exists for this company',
           409,
-          { email: 'Already exists' },
+          [{ path: 'email', message: 'Already exists' }],
         );
       }
       throw error;
-    } finally {
-      session.endSession();
     }
   }
 
@@ -67,7 +83,7 @@ export class VendorsService {
     const { search, status, page = 1, limit = 10, sortBy = 'createdAt', sortOrder = 'desc' } = query;
     const filter: any = {
       companyId,
-      isDeleted: { $eq: false },
+      deletedAt: null,
     };
 
     if (status) {
@@ -109,7 +125,7 @@ export class VendorsService {
     const vendor = await this.vendorModel.findOne({
       _id: vendorId,
       companyId,
-      isDeleted: { $eq: false },
+      deletedAt: null,
     });
 
     if (!vendor) {
@@ -128,32 +144,50 @@ export class VendorsService {
     vendorId: string,
     updateVendorDto: UpdateVendorDto,
   ): Promise<VendorResponse> {
-    const session = await this.connection.startSession();
-    session.startTransaction();
+    const vendor = await this.vendorModel.findOne({
+      _id: vendorId,
+      companyId,
+      deletedAt: null,
+    });
 
-    try {
-      const vendor = await this.vendorModel
-        .findOne({
-          _id: vendorId,
-          companyId,
-          isDeleted: { $eq: false },
-        })
-        .session(session);
+    if (!vendor) {
+      throw new BaseException(
+        VendorErrorCodes.VENDOR_NOT_FOUND,
+        'Vendor not found',
+        404,
+      );
+    }
 
-      if (!vendor) {
+    // Trim and lowercase email if provided
+    if (updateVendorDto.email) {
+      updateVendorDto.email = updateVendorDto.email.trim().toLowerCase();
+    }
+
+    // Explicit check for duplicate email within the same company (case-insensitive)
+    if (updateVendorDto.email) {
+      const existing = await this.vendorModel.findOne({
+        companyId,
+        email: updateVendorDto.email,
+        deletedAt: null,
+        _id: { $ne: vendorId },
+      });
+
+      if (existing) {
         throw new BaseException(
-          VendorErrorCodes.VENDOR_NOT_FOUND,
-          'Vendor not found',
-          404,
+          VendorErrorCodes.VENDOR_DUPLICATE_EMAIL,
+          'Vendor with this email already exists for this company',
+          409,
+          [{ path: 'email', message: 'Already exists' }],
         );
       }
+    }
 
+    try {
       Object.assign(vendor, updateVendorDto);
-      await vendor.save({ session });
-      await session.commitTransaction();
+      await vendor.save();
       return VendorMapper.toResponse(vendor);
     } catch (error: unknown) {
-      await session.abortTransaction();
+      this.logger.error(`Error in update vendor: ${error instanceof Error ? error.message : error}`);
       if (
         error &&
         typeof error === 'object' &&
@@ -164,44 +198,31 @@ export class VendorsService {
           VendorErrorCodes.VENDOR_DUPLICATE_EMAIL,
           'Vendor with this email already exists for this company',
           409,
-          { email: 'Already exists' },
+          [{ path: 'email', message: 'Already exists' }],
         );
       }
       throw error;
-    } finally {
-      session.endSession();
     }
   }
 
   async remove(companyId: string, vendorId: string): Promise<void> {
-    const session = await this.connection.startSession();
-    session.startTransaction();
+    const vendor = await this.vendorModel.findOne({
+      _id: vendorId,
+      companyId,
+      deletedAt: null,
+    });
 
-    try {
-      const vendor = await this.vendorModel
-        .findOne({
-          _id: vendorId,
-          companyId,
-          isDeleted: { $eq: false },
-        })
-        .session(session);
-
-      if (!vendor) {
-        throw new BaseException(
-          VendorErrorCodes.VENDOR_NOT_FOUND,
-          'Vendor not found',
-          404,
-        );
-      }
-
-      vendor.isDeleted = true;
-      await vendor.save({ session });
-      await session.commitTransaction();
-    } catch (error) {
-      await session.abortTransaction();
-      throw error;
-    } finally {
-      session.endSession();
+    if (!vendor) {
+      throw new BaseException(
+        VendorErrorCodes.VENDOR_NOT_FOUND,
+        'Vendor not found',
+        404,
+      );
     }
+
+    vendor.isDeleted = true;
+    vendor.deletedAt = new Date();
+    vendor.deletedById = null;
+    await vendor.save();
   }
 }

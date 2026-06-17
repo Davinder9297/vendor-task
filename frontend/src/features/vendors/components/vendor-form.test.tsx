@@ -80,7 +80,7 @@ describe('VendorForm', () => {
         category: VendorCategory.SOFTWARE,
         status: VendorStatus.ACTIVE,
         notes: '',
-      });
+      }, expect.any(Function));
     });
   });
 });

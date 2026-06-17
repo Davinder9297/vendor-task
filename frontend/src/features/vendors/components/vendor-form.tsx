@@ -23,7 +23,7 @@ function getCategoryLabel(category: VendorCategory): string {
 
 interface VendorFormProps {
   initialData?: Vendor;
-  onSubmit: (data: VendorFormValues) => void;
+  onSubmit: (data: VendorFormValues, setError: any) => void;
   isSubmitting: boolean;
   companyId: string;
 }
@@ -33,7 +33,8 @@ export function VendorForm({ initialData, onSubmit, isSubmitting, companyId }: V
   const {
     register,
     handleSubmit,
-    formState: { errors, isDirty },
+    setError,
+    formState: { errors },
   } = useForm<VendorFormValues>({
     resolver: zodResolver(vendorSchema) as any,
     defaultValues: initialData
@@ -56,7 +57,7 @@ export function VendorForm({ initialData, onSubmit, isSubmitting, companyId }: V
   });
 
   return (
-    <form onSubmit={handleSubmit(onSubmit as any)} className="space-y-6">
+    <form onSubmit={handleSubmit((data) => onSubmit(data, setError))} className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="space-y-2">
           <Label htmlFor="name" className="text-sm font-medium text-foreground">Vendor Name *</Label>
@@ -145,7 +146,7 @@ export function VendorForm({ initialData, onSubmit, isSubmitting, companyId }: V
       <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-border">
         <Button
           type="submit"
-          disabled={isSubmitting || !isDirty}
+          disabled={isSubmitting}
           className="w-full sm:w-auto"
         >
           {isSubmitting ? (

@@ -7,7 +7,7 @@ export class ApiError extends Error {
   constructor(
     public code: string,
     message: string,
-    public fields?: Record<string, string>,
+    public fields?: { path: string; message: string }[],
   ) {
     super(message);
     this.name = 'ApiError';
@@ -25,22 +25,18 @@ async function fetchApi<T>(url: string, options?: RequestInit): Promise<T> {
     });
 
     const data: ApiResponse<T> = await response.json();
-    console.log('API Response:', data);
 
     if (!data.success) {
-      console.log('Throwing error with message:', data.error?.message);
       const error = new ApiError(
         data.error?.code || 'UNKNOWN_ERROR',
         data.error?.message || 'An error occurred',
-        data.error?.fields,
+        data.error?.fields as any,
       );
-      console.log('Created error:', error);
       throw error;
     }
 
     return data.data as T;
   } catch (fetchError) {
-    console.error('Fetch error:', fetchError);
     if (fetchError instanceof ApiError) {
       throw fetchError;
     }

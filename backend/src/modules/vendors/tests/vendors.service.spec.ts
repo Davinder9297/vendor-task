@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getModelToken } from '@nestjs/mongoose';
 import { Connection, Model } from 'mongoose';
+import * as mongoose from 'mongoose';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import { VendorsService } from '../vendors.service';
 import { Vendor, VendorSchema } from '../schemas/vendor.schema';
@@ -30,8 +31,7 @@ describe('VendorsService', () => {
         },
         {
           provide: Connection,
-          useFactory: async () => {
-            const mongoose = await import('mongoose');
+          useFactory: () => {
             const conn = mongoose.createConnection(mongod.getUri());
             return conn;
           },
@@ -157,5 +157,6 @@ describe('VendorsService', () => {
 
     const found = await vendorModel.findById(vendor.id);
     expect(found?.isDeleted).toBe(true);
+    expect(found?.deletedAt).toBeInstanceOf(Date);
   });
 });

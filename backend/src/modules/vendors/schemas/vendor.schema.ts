@@ -36,6 +36,12 @@ export class Vendor {
   @Prop({ required: true, type: Boolean, default: false })
   isDeleted: boolean;
 
+  @Prop({ type: Date, default: null })
+  deletedAt?: Date | null;
+
+  @Prop({ type: String, default: null })
+  deletedById?: string | null;
+
   @Prop({ required: true, type: Number, default: 1 })
   schemaVersion: number;
 
@@ -51,6 +57,7 @@ export const VendorSchema = SchemaFactory.createForClass(Vendor);
 // Add indexes
 VendorSchema.index({ companyId: 1, status: 1, createdAt: -1 });
 VendorSchema.index({ companyId: 1, isDeleted: 1 });
+VendorSchema.index({ companyId: 1, deletedAt: 1 });
 VendorSchema.index(
   { companyId: 1, email: 1 },
   {

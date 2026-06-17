@@ -1,4 +1,4 @@
-import { IsOptional, IsString, IsEnum, IsInt, Min, Max } from 'class-validator';
+import { IsOptional, IsString, IsEnum, IsInt, Min, Max, IsIn } from 'class-validator';
 import { Type } from 'class-transformer';
 import { VendorStatus } from '../constants/vendor-status.enum';
 
@@ -28,6 +28,7 @@ export class ListVendorsQueryDto {
 
   @IsOptional()
   @IsString()
+  @IsIn(['name', 'email', 'status', 'category', 'createdAt', 'updatedAt'])
   sortBy?: string = 'createdAt';
 
   @IsOptional()

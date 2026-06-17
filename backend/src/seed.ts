@@ -13,7 +13,7 @@ async function seed() {
   // Clear existing data
   await vendorModel.deleteMany({});
 
-  const companyId = 'demo-company-1';
+  const companyId = 'demo-company';
 
   const demoVendors = [
     {

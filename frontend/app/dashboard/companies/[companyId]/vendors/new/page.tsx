@@ -17,7 +17,7 @@ export default function CreateVendorPage() {
   const createMutation = useCreateVendor(companyId);
   const { addToast } = useToast();
 
-  const handleSubmit = (data: any) => {
+  const handleSubmit = (data: any, setError: any) => {
     createMutation.mutate(data, {
       onSuccess: () => {
         addToast({
@@ -29,6 +29,14 @@ export default function CreateVendorPage() {
       },
       onError: (error: unknown) => {
         const apiError = error as ApiError;
+        if (apiError.fields && Array.isArray(apiError.fields)) {
+          apiError.fields.forEach((fieldErr) => {
+            setError(fieldErr.path, {
+              type: 'manual',
+              message: fieldErr.message,
+            });
+          });
+        }
         addToast({
           type: 'error',
           title: 'Failed to create vendor',

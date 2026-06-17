@@ -11,6 +11,8 @@ export interface VendorResponse {
   status: string;
   notes?: string;
   isDeleted: boolean;
+  deletedAt?: Date | null;
+  deletedById?: string | null;
   createdAt: Date;
   updatedAt: Date;
   schemaVersion: number;
@@ -28,6 +30,8 @@ export class VendorMapper {
       status: vendor.status,
       notes: vendor.notes,
       isDeleted: vendor.isDeleted,
+      deletedAt: vendor.deletedAt ?? null,
+      deletedById: vendor.deletedById ?? null,
       createdAt: vendor.createdAt,
       updatedAt: vendor.updatedAt,
       schemaVersion: vendor.schemaVersion,
